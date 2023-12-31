@@ -12,7 +12,7 @@ const PASSWORD = "papai123";
 
 async function getPlayers(): Promise<Player[] | null> {
   try {
-    const res = await fetch(`http://localhost:3000/api/addPlayer`);
+    const res = await fetch(`https://mafia-game-test.vercel.app/api/addPlayer`);
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
@@ -25,7 +25,7 @@ async function getPlayers(): Promise<Player[] | null> {
 
 async function deletePlayer(playerId: number): Promise<void> {
   try {
-    const res = await fetch(`http://localhost:3000/api/deletePlayer?id=${playerId}`, {
+    const res = await fetch(`https://mafia-game-test.vercel.app/api/deletePlayer?id=${playerId}`, {
       method: 'DELETE',
     });
     if (!res.ok) {
