@@ -2,7 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+body {
+  background: #ffffff;
+  @apply text-gray-500 m-8;
+}
+h1, h2 {
+  @apply font-bold  text-lg;
+}
+main {
+  @apply max-w-5xl my-12 mx-auto px-8;
+}
+main > h2 {
+  @apply mb-4 pb-2 text-base ;
+}
+p > a {
+  @apply  underline;
+}
+
+/* nav styles */
+nav {
+  @apply
+    pb-4
+    border-b-2 border-gray-200
+    flex items-center gap-5 
+    my-10 mx-auto 
+    max-w-5xl;
+}
+nav a, nav span {
+  @apply text-gray-500;
+}
+nav a:hover {
+  @apply text-black;
+}
+main nav {
+  @apply border-0;
+}
+
+/* button styles */
+button {
+  @apply 
+    px-3 py-2 
+    rounded-sm 
+    flex justify-between items-center gap-2
+    text-sm;
+}
+button:hover {
+  @apply bg-opacity-90;
+}
+.btn-primary {
+  @apply  text-white;
+}
+.btn-secondary {
+  @apply bg-gray-200 text-gray-900;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+th {
+  background-color: #f4f4f4;
+  text-align: left;
+}
+
+
+/* :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
@@ -14,8 +84,8 @@
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
   }
-}
-
+} */
+/* 
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
@@ -24,4 +94,4 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
-}
+} */
