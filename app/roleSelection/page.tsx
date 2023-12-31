@@ -19,7 +19,7 @@ export default function roleSelection() {
     setErrorMessage('');
 
     try {
-      const response = await fetch(`http://localhost:3000/api/addPlayer`, {
+      const response = await fetch(`https://mafia-game-test.vercel.app/api/addPlayer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
