@@ -8,6 +8,7 @@ export default function Navbar() {
         <Link href="/overseer">Overseer view </Link>
         <Link href="/roleSelection">Role selection</Link>
         <Link href="/allPlayers">Alive players</Link>
+        <Link href="/registerPlayer">Register player</Link>
     </nav>
   )
 }

@@ -19,7 +19,7 @@ export default function roleSelection() {
     setErrorMessage('');
 
     try {
-      const response = await fetch(`https://mafia-game-production.up.railway.app/api/addPlayer`, {
+      const response = await fetch(`/api/addPlayer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
