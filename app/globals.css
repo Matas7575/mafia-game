@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 body {
-  background: #ffffff;
   @apply text-gray-500 m-8;
 }
 h1, h2 {
@@ -13,7 +12,7 @@ main {
   @apply max-w-5xl my-12 mx-auto px-8;
 }
 main > h2 {
-  @apply mb-4 pb-2 text-base ;
+  @apply mb-4 pb-2 text-base;
 }
 p > a {
   @apply  underline;

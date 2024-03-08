@@ -91,6 +91,18 @@ export default function RegisterPlayer() {
           {errorMessage}
         </div>
       )}
+      <div>
+          <br />
+          <h2>
+            In name please enter your actual name to avoid confusion
+          </h2>
+        </div>
+        <div>
+          <br />
+          <h2>
+            You cannot modify your name after creation so make sure it is correct
+          </h2>
+        </div>
     </main>
   );
 }

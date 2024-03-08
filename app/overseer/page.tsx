@@ -67,8 +67,6 @@ const Overseer: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const [roleToUpdate, setRoleToUpdate] = useState('');
-  const [newLimit, setNewLimit] = useState('');
   const [roleLimits, setRoleLimits] = useState<RoleLimit[]>([]);
 
 
@@ -77,7 +75,6 @@ const Overseer: React.FC = () => {
       getPlayers().then(playersData => {
         if (playersData) {
           setData(playersData);
-          console.log("Data:", playersData);
         }
       });
     }
@@ -87,7 +84,6 @@ const Overseer: React.FC = () => {
     getPlayers().then(playersData => {
       if (playersData) {
         setData(playersData);
-        console.log("Data:", playersData);
       }
     });
   }, []);
@@ -164,40 +160,17 @@ const Overseer: React.FC = () => {
       </div>
     );
   }
-
-  if (!data.length) return <div>Loading...</div>;
+  if (!data.length && !roleLimits.length) return <div>Loading...</div>;
 
   return (
     <div className="p-4">
-      {/* <div>
-    <h2>Adjust Role Limits</h2>
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      updateRoleLimit(roleToUpdate, Number(newLimit));
-    }}>
-      <input
-        type="text"
-        placeholder="Role"
-        value={roleToUpdate}
-        onChange={(e) => setRoleToUpdate(e.target.value)}
-      />
-      <input
-        type="number"
-        placeholder="New Limit"
-        value={newLimit}
-        onChange={(e) => setNewLimit(e.target.value)}
-      />
-      <button type="submit">Update Limit</button>
-    </form>
-    
-  </div> */}
-  <h2>Role Limits</h2>
+      <h2>Role Limits</h2>
       <table>
         <thead>
           <tr>
             <th>Role</th>
             <th>Limit</th>
-            <th>Actions</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -213,12 +186,17 @@ const Overseer: React.FC = () => {
                 />
               </td>
               <td>
-                <button onClick={() => submitNewLimit(limit.id, limit.limit)}>Update</button>
+                <button onClick={() => submitNewLimit(limit.id, limit.limit)} 
+                className="py-1 px-3 text-white bg-blue-500 hover:bg-blue-600 rounded">Update</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      <h4 className="text-1xl font-bold">Total players that can play: {roleLimits.reduce((sum, limit) => sum + limit.limit, 0)}</h4>
+      <br />
+      <br />
+      <br />
       <h2 className="text-2xl font-bold mb-4">Player Overview</h2>
       <table className="min-w-full table-auto border-collapse border border-gray-200">
         <thead className="bg-gray-100">
