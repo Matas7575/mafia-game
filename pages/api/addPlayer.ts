@@ -66,16 +66,16 @@ export default async function handler(
  
        // Define your roles and their max counts
        const roleDefinitions: any = {
-         Doctor: 1,
+         Doctor: 2,
          Escort: 1,
          Jailor: 1,
          Mayor: 1,
          Medium: 1,
          Godfather: 1,
          Mafioso: 2, // Example of a role that can have duplicates
-         Jester: 1,
+         Jester: 2,
          SerialKiller: 1,
-         Survivor: 2, // Another role with duplicates allowed
+         Survivor: 3, // Another role with duplicates allowed
        };
  
        // Determine available roles
