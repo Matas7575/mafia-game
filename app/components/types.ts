@@ -4,6 +4,8 @@ export interface Role {
     abilities: string;
     attributes: string;
     goal: string;
+    limit: number;
+    currentCount: number;
   }
   
   export interface Roles {

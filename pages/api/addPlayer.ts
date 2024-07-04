@@ -1,121 +1,98 @@
-// pages/api/addPlayer.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-import prisma from '../../prisma/client'
-import roles from '@/app/components/rolesData';
-// const prisma = new PrismaClient();
+import { NextApiRequest, NextApiResponse } from 'next';
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
-type Data = {
-  name: string
+interface Player {
+    id: string;
+    playerName: string;
+    role: string;
 }
 
-// Utility function to randomly assign roles
-const assignRole = async () => {
-  // Fetch all existing players to determine which roles have been assigned
-  const players = await prisma.player.findMany();
-  const assignedRoles = players.map(player => player.role);
+interface Role {
+    name: string;
+    alignment: string;
+    abilities: string;
+    attributes: string;
+    goal: string;
+    limit: number;
+    currentCount: number;
+}
 
-  // Filter roles that can be assigned multiple times and those that can only be assigned once
-  const uniqueRoles: string[] = [];
-  const multipleRoles: string[] = [];
-  Object.values(roles).flat().forEach((role) => {
-    if (role.name === 'Survivor' || role.name === 'Medium' || role.name === 'Mafioso') {
-      multipleRoles.push(role.name);
-    } else if (!assignedRoles.includes(role.name)) {
-      uniqueRoles.push(role.name);
-    }
-  });
-
-  // Combine all available roles and select one randomly
-  const availableRoles = [...uniqueRoles, ...multipleRoles];
-  if (availableRoles.length === 0) throw new Error('No available roles');
-  const randomIndex = Math.floor(Math.random() * availableRoles.length);
-  return availableRoles[randomIndex];
+type RolesData = {
+    town: Role[];
+    mafia: Role[];
+    neutral: Role[];
 };
 
+type Data = {
+    message: string;
+    role?: string;
+    id?: string;
+};
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method === 'GET') {
-    try{
-      const data = await prisma.player.findMany()
-      return res.status(200).json(data)
-    }catch(error){
-      return res.status(500).json(error)
-    }
-  }
-  if (req.method === 'POST') {
-    // const {  playerName, selectedRole } = req.body;
-    const { playerName } = req.body;
+// Helper function to determine the category key from a role's alignment
+function getCategoryFromAlignment(alignment: string): keyof RolesData | undefined {
+    if (alignment.includes("Town")) return 'town';
+    if (alignment.includes("Mafia")) return 'mafia';
+    if (alignment.includes("Neutral")) return 'neutral';
+    return undefined;
+}
 
+export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+    const filePath = path.join(process.cwd(), 'data', 'players.json');
+    const rolesPath = path.join(process.cwd(), 'data', 'roles.json');
 
-    const existingPlayer = await prisma.player.findFirst({
-      where: { name: playerName },
-    });
+    if (req.method === 'POST') {
+        const { playerName } = req.body;
 
-    if (existingPlayer) {
-      return res.status(400).json({ message: "Player with this name already exists" });
-    }
+        try {
+            const rolesData: RolesData = JSON.parse(fs.readFileSync(rolesPath, 'utf8'));
+            const players: Player[] = JSON.parse(fs.readFileSync(filePath, 'utf8') || '[]');
 
-    try {
-       // Fetch all current player roles
-       const players = await prisma.player.findMany();
-       const assignedRoles = players.map(player => player.role);
- 
-       // Define your roles and their max counts
-       const roleDefinitions: any = {
-         Doctor: 1,
-         Escort: 1,
-         Jailor: 1,
-         Mayor: 1,
-         Medium: 1,
-         Godfather: 1,
-         Mafioso: 2, // Example of a role that can have duplicates
-         Jester: 1,
-         SerialKiller: 1,
-         Survivor: 2, // Another role with duplicates allowed
-       };
- 
-       // Determine available roles
-       let availableRoles = Object.keys(roleDefinitions).filter(role => {
-         const count = assignedRoles.filter(r => r === role).length;
-         return count < roleDefinitions[role];
-       });
+            // Combine all roles into a single array and filter available ones
+            const availableRoles: Role[] = ([] as Role[]).concat(...Object.values(rolesData))
+                .filter(role => role.currentCount < role.limit);
 
+            if (availableRoles.length === 0) {
+                return res.status(400).json({ message: "No available roles due to limit constraints." });
+            }
 
-      const selectedRole = availableRoles[Math.floor(Math.random() * availableRoles.length)];
+            const assignedRole = availableRoles[Math.floor(Math.random() * availableRoles.length)];
+            const categoryKey = getCategoryFromAlignment(assignedRole.alignment);
 
+            if (!categoryKey || !rolesData[categoryKey]) {
+                console.error(`Role category for alignment ${assignedRole.alignment} not found.`);
+                return res.status(400).json({ message: "Role category not found." });
+            }
 
-      const newPlayer = await prisma.player.create({
-        data: {
-          name: playerName,
-          role: selectedRole,
-        },
-      });
+            const roleCategory = rolesData[categoryKey];
+            const roleToUpdate = roleCategory.find(role => role.name === assignedRole.name);
+            if (!roleToUpdate) {
+                console.error(`Role ${assignedRole.name} not found in category ${assignedRole.alignment}.`);
+                return res.status(404).json({ message: "Role not found in category." });
+            }
 
-      res.status(200).json(newPlayer);
-    } catch (error) {
-      console.error('Error adding player:', error);
-      res.status(500).json({ error: "Failed to add player" });
-    }
-  } else {
-    // Handle any other HTTP method
-    res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-    // Handle GET requests or other methods
-    if (req.method === 'GET') {
-      try {
-        const players = await prisma.player.findMany();
-        res.status(200).json(players);
-      } catch (error) {
-        console.error('Error fetching players:', error);
-        res.status(500).json({ error: "Failed to fetch players." });
-      }
+            roleToUpdate.currentCount++;
+
+            const newPlayer: Player = {
+                id: uuidv4(),
+                playerName,
+                role: assignedRole.name
+            };
+            players.push(newPlayer);
+
+            // Write the updated players and roles back to their respective files
+            fs.writeFileSync(filePath, JSON.stringify(players, null, 2), 'utf8');
+            fs.writeFileSync(rolesPath, JSON.stringify(rolesData, null, 2), 'utf8');
+
+            res.status(200).json({ message: 'Player added successfully!', role: assignedRole.name, id: newPlayer.id });
+        } catch (err) {
+            console.error('Failed to handle request:', err);
+            res.status(500).json({ message: 'Failed to process data file' });
+        }
     } else {
-      res.setHeader('Allow', ['POST']);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
+        res.setHeader('Allow', ['POST']);
+        res.status(405).end(`Method ${req.method} Not Allowed`);
     }
-  }
 }

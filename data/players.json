@@ -1,0 +1,42 @@
+[
+  {
+    "id": "8791f75b-4663-462d-80e6-5199b014e458",
+    "playerName": "test2",
+    "role": "Godfather"
+  },
+  {
+    "id": "40e8b8cf-2c43-4769-9c6c-0982721cbc2d",
+    "playerName": "test3",
+    "role": "Escort"
+  },
+  {
+    "id": "c3b5f24f-032e-43aa-b2fb-d9c1e9e8f230",
+    "playerName": "test4",
+    "role": "Serial Killer"
+  },
+  {
+    "id": "c1f09221-8b10-4516-b062-27835832bd76",
+    "playerName": "test5",
+    "role": "Mafioso"
+  },
+  {
+    "id": "40b34d77-23ac-4aa0-b622-ed73d31de642",
+    "playerName": "test6",
+    "role": "Survivor"
+  },
+  {
+    "id": "5200b3e0-da76-4d01-8fb2-5bc7b0bf17fd",
+    "playerName": "test7",
+    "role": "Jailor"
+  },
+  {
+    "id": "ca87cc25-d21f-4f47-988e-6d855b15f6a5",
+    "playerName": "test8",
+    "role": "Survivor"
+  },
+  {
+    "id": "020651c6-5b7b-4b22-847f-77b0a04cdd8b",
+    "playerName": "test9",
+    "role": "Jester"
+  }
+]

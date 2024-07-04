@@ -1,10 +1,11 @@
 "use client";
+// components/Overseer.tsx
 import React, { useEffect, useState } from 'react';
 
 // Define a type for the player data
 type Player = {
   id: number;
-  name: string;
+  playerName: string;
   role: string;
 };
 
@@ -16,88 +17,23 @@ type RoleLimit = {
 
 const PASSWORD = "papai123";
 
-async function getPlayers(): Promise<Player[] | null> {
-  try {
-    const res = await fetch(`/api/addPlayer`);
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-    return res.json();
-  } catch (error) {
-    console.error('Failed to fetch:', error);
-    return null;
-  }
-}
-
-async function deletePlayer(playerId: number): Promise<void> {
-  try {
-    const res = await fetch(`/api/deletePlayer?id=${playerId}`, {
-      method: 'DELETE',
-    });
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-    console.log('Player deleted successfully');
-  } catch (error) {
-    console.error('Failed to delete player:', error);
-  }
-}
-
-// Function to update role limits
-const updateRoleLimit = async (id: number, role: string, limit: number) => {
-  try {
-    const response = await fetch('/api/updateRoleLimit', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id, role, limit }),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    console.log('Role limit updated successfully');
-  } catch (error) {
-    console.error('Failed to update role limit:', error);
-  }
-};
-
-const Overseer: React.FC = () => {
-  const [data, setData] = useState<Player[]>([]);
+const GetPlayers: React.FC = () => {
+  const [players, setPlayers] = useState<Player[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [roleLimits, setRoleLimits] = useState<RoleLimit[]>([]);
 
-
   useEffect(() => {
+    async function fetchData() {
+      const response = await fetch('/api/players');
+      const data = await response.json();
+      setPlayers(data);
+    }
     if (isAuthenticated) {
-      getPlayers().then(playersData => {
-        if (playersData) {
-          setData(playersData);
-        }
-      });
+      fetchData();
     }
   }, [isAuthenticated]);
-
-  useEffect(() => {
-    getPlayers().then(playersData => {
-      if (playersData) {
-        setData(playersData);
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    const fetchRoleLimits = async () => {
-      const response = await fetch(`/api/getRoleLimits`);
-      const limits = await response.json();
-      setRoleLimits(limits);
-    };
-
-    fetchRoleLimits();
-  }, []);
-
 
   const handlePasswordSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -111,30 +47,13 @@ const Overseer: React.FC = () => {
   };
 
   const handleDelete = async (playerId: number) => {
-    await deletePlayer(playerId);
-    setData(data.filter(player => player.id !== playerId));
-  };
-
-  const handleLimitChange = (event: React.ChangeEvent<HTMLInputElement>, roleId: number) => {
-    const newLimit = parseInt(event.target.value, 10);
-    const updatedLimits = roleLimits.map(limit => {
-      if (limit.id === roleId) {
-        return { ...limit, limit: newLimit };
-      }
-      return limit;
-    });
-    setRoleLimits(updatedLimits);
-  };
-
-  const submitNewLimit = async (roleId: number, newLimit: number) => {
-    await updateRoleLimit(roleId, roleLimits.find(limit => limit.id === roleId)!.role, newLimit);
-    // Optionally, refresh the role limits here or rely on optimistic updates
+    await fetch(`/api/players?id=${playerId}`, { method: 'DELETE' });
+    setPlayers(prev => prev.filter(player => player.id !== playerId));
   };
 
   if (!isAuthenticated) {
     return (
       <div className="p-4">
-         
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
@@ -160,72 +79,21 @@ const Overseer: React.FC = () => {
       </div>
     );
   }
-  if (!data.length && !roleLimits.length) return <div>Loading...</div>;
 
   return (
     <div className="p-4">
-      <h2>Role Limits</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Role</th>
-            <th>Limit</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {roleLimits.map(limit => (
-            <tr key={limit.id}>
-              <td>{limit.role}</td>
-              <td>
-                <input
-                  type="number"
-                  value={limit.limit}
-                  onChange={(e) => handleLimitChange(e, limit.id)}
-                  style={{ width: '60px' }}
-                />
-              </td>
-              <td>
-                <button onClick={() => submitNewLimit(limit.id, limit.limit)} 
-                className="py-1 px-3 text-white bg-blue-500 hover:bg-blue-600 rounded">Update</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <h4 className="text-1xl font-bold">Total players that can play: {roleLimits.reduce((sum, limit) => sum + limit.limit, 0)}</h4>
-      <br />
-      <br />
-      <br />
       <h2 className="text-2xl font-bold mb-4">Player Overview</h2>
-      <table className="min-w-full table-auto border-collapse border border-gray-200">
-        <thead className="bg-gray-100">
-          <tr>
-            {/* <th className="border px-4 py-2 text-left">ID</th> */}
-            <th className="border px-4 py-2 text-left">Name</th>
-            <th className="border px-4 py-2 text-left">Role</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map(player => (
-            <tr key={player.id}>
-              {/* <td className="border px-4 py-2">{player.id}</td> */}
-              <td className="border px-4 py-2">{player.name}</td>
-              <td className="border px-4 py-2">{player.role}</td>
-              <td>
-                <button
-                  onClick={() => handleDelete(player.id)}
-                  className="py-1 px-3 text-white bg-red-500 hover:bg-red-600 rounded"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <ul>
+        {players.map(player => (
+          <li key={player.id}>
+            {player.playerName} - {player.role}
+            <button onClick={() => handleDelete(player.id)}
+                className="ml-4 py-1 px-3 text-white bg-red-500 hover:bg-red-600 rounded">Delete</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
-export default Overseer;
+export default GetPlayers;
